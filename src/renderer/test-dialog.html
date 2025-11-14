@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Dialog</title>
+</head>
+<body>
+    <h1>Testing Electron Dialogs</h1>
+    <button id="testInput">Test Input Dialog</button>
+    <button id="testAlert">Test Alert Dialog</button>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        document.getElementById('testInput').addEventListener('click', async () => {
+            console.log("Testing input dialog...");
+            try {
+                const result = await ipcRenderer.invoke('show-input-dialog', {
+                    title: 'Test Input',
+                    message: 'Please enter something:',
+                    placeholder: 'Test input...'
+                });
+                console.log("Input dialog result:", result);
+                alert("Result: " + result);
+            } catch (error) {
+                console.error("Input dialog error:", error);
+                alert("Error: " + error.message);
+            }
+        });
+        
+        document.getElementById('testAlert').addEventListener('click', async () => {
+            console.log("Testing alert dialog...");
+            try {
+                await ipcRenderer.invoke('show-alert-dialog', {
+                    title: 'Test Alert',
+                    message: 'This is a test alert!',
+                    detail: 'If you see this, alerts work.'
+                });
+                console.log("Alert dialog completed");
+            } catch (error) {
+                console.error("Alert dialog error:", error);
+                alert("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

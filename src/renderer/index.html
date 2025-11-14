@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>NovelNexus</title>
+    <style>
+        /* Base Styles */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #1e1e1e;
+            color: #ffffff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background: #2d3748;
+            border-right: 1px solid #4a5568;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .sidebar-title {
+            margin: 0;
+            color: #e2e8f0;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .collapse-btn {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+        }
+        
+        .nav-items {
+            flex: 1;
+            padding: 10px 0;
+        }
+        
+        .nav-section {
+            margin-bottom: 10px;
+        }
+        
+        .section-header {
+            padding: 8px 20px;
+            color: #718096;
+            font-size: 0.8em;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .sidebar.collapsed .section-header {
+            display: none;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+        
+        .nav-item:hover {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+        
+        .nav-item.active {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 1.2em;
+            min-width: 20px;
+        }
+        
+        .sidebar.collapsed .nav-item span:not(.nav-icon) {
+            display: none;
+        }
+        
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+            padding: 12px;
+        }
+        
+        .sidebar.collapsed .nav-icon {
+            margin-right: 0;
+        }
+        
+        .sidebar-footer {
+            padding: 15px;
+            border-top: 1px solid #4a5568;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Dashboard Header */
+        .dashboard-header {
+            background: #2d3748;
+            padding: 15px 25px;
+            border-bottom: 1px solid #4a5568;
+        }
+        
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .project-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .project-title h1 {
+            margin: 0;
+            font-size: 1.6em;
+        }
+        
+        .project-switcher {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+        
+        .series-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.85em;
+            color: #a0aec0;
+        }
+        
+        .toggle-aggregate {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Publishing Stats */
+        .publishing-stats {
+            background: #4a5568;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #3b82f6;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            color: #a0aec0;
+            margin-top: 3px;
+        }
+        
+        /* Dashboard Content */
+        .dashboard-content {
+            flex: 1;
+            padding: 20px 25px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            align-items: start;
+        }
+        
+        /* Calendar - Smaller */
+        .calendar-section {
+            background: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+            height: fit-content;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            background: #374151;
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            font-size: 0.85em;
+        }
+        
+        .calendar-day:hover {
+            background: #4b5563;
+            transform: scale(1.05);
+        }
+        
+        .calendar-day.published {
+            background: #059669;
+        }
+        
+        .calendar-day.missed {
+            background: #dc2626;
+        }
+        
+        .calendar-day.current {
+            border: 2px solid #3b82f6;
+        }
+        
+        .calendar-day.has-tasks::after {
+            content: '•';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            color: #f59e0b;
+            font-size: 1.2em;
+        }
+        
+        .day-number {
+            font-weight: bold;
+        }
+        
+        .day-stats {
+            font-size: 0.6em;
+            margin-top: 1px;
+            opacity: 0.8;
+        }
+        
+        /* Task List */
+        .tasks-section {
+            background: #2d3748;
+            padding: 20px;
+            border-radius: 8px;
+            height: fit-content;
+        }
+        
+        .tasks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .task-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: #374151;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        
+        .task-item:hover {
+            background: #4b5563;
+        }
+        
+        .task-item.overdue {
+            border-left: 3px solid #dc2626;
+        }
+        
+        .task-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+        
+        .task-checkbox {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-weight: 500;
+            margin: 0 0 4px 0;
+        }
+        
+        .task-due {
+            font-size: 0.8em;
+            color: #a0aec0;
+        }
+        
+        .task-overdue {
+            color: #dc2626;
+            font-weight: bold;
+        }
+        
+        .add-task-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+        
+        .action-btn:hover {
+            background: #2563eb;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #2d3748;
+            padding: 25px;
+            border-radius: 8px;
+            width: 400px;
+            border: 2px solid #4a5568;
+        }
+        
+        .modal-title {
+            margin: 0 0 15px 0;
+            color: #e2e8f0;
+            text-align: center;
+        }
+        
+        .modal-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #4a5568;
+            background: #1a202c;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+        
+        .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .modal-btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .modal-btn-secondary {
+            background: #718096;
+            color: white;
+        }
+
+        /* Novel List Styles */
+        .novel-list { 
+            padding: 40px; 
+            max-width: 1000px; 
+            margin: 0 auto;
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .list-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 30px; 
+        }
+        
+        .add-novel-btn, .cta-button { 
+            background: #3b82f6; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            transition: all 0.2s;
+        }
+        
+        .novels-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            gap: 25px; 
+        }
+        
+        .novel-card { 
+            background: #2d3748; 
+            padding: 25px; 
+            border-radius: 10px; 
+            border-left: 5px solid #3b82f6; 
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .novel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        .empty-state { 
+            text-align: center; 
+            padding: 80px 20px; 
+            color: #718096; 
+        }
+        
+        .loading { 
+            text-align: center; 
+            padding: 60px; 
+            font-size: 18px; 
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div class="loading">Loading NovelNexus...</div>
+    </div>
+
+    <!-- Load React -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+<script>
+    const { useState, useEffect } = React;
+    
+    // MAIN APP COMPONENT
+    function App() {
+        const [currentView, setCurrentView] = useState('novelList');
+        const [currentNovel, setCurrentNovel] = useState(null);
+        const [activeModule, setActiveModule] = useState('nexus');
+        const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+        const [novels, setNovels] = useState([]);
+        const [loading, setLoading] = useState(true);
+        const [showNovelModal, setShowNovelModal] = useState(false);
+        const [novelTitleInput, setNovelTitleInput] = useState('');
+        const [showTaskModal, setShowTaskModal] = useState(false);
+        const [newTask, setNewTask] = useState({ title: '', dueDate: '' });
+
+        // Calendar and task data
+        const [currentMonth, setCurrentMonth] = useState(new Date());
+        const [calendarData, setCalendarData] = useState({});
+        const [tasks, setTasks] = useState([]);
+
+        // Navigation structure matching your specification
+        const navStructure = [
+            {
+                section: 'The Nexus',
+                id: 'nexus',
+                icon: '🏠',
+                items: [
+                    { id: 'home', label: 'Dashboard', icon: '📊' }
+                ]
+            },
+            {
+                section: 'The Codex',
+                id: 'codex',
+                icon: '📚',
+                items: [
+                    { id: 'world-bible', label: 'World Bible', icon: '🌍' },
+                    { id: 'lore', label: 'Lore', icon: '📖' },
+                    { id: 'narrative', label: 'Narrative Detail', icon: '✍️' },
+                    { id: 'dictionary', label: 'Dictionary', icon: '🔤' }
+                ]
+            },
+            {
+                section: 'The Cast',
+                id: 'cast',
+                icon: '👥',
+                items: [
+                    { id: 'characters', label: 'Character Profiles', icon: '👤' },
+                    { id: 'relationships', label: 'Relationships', icon: '🔄' }
+                ]
+            },
+            {
+                section: 'The StoryForge',
+                id: 'storyforge',
+                icon: '⚡',
+                items: [
+                    { id: 'plot', label: 'Plot Blueprint', icon: '🗺️' },
+                    { id: 'chapters', label: 'Published Chapters', icon: '📄' },
+                    { id: 'chapter-creation', label: 'Chapter Creation', icon: '🖊️' }
+                ]
+            },
+            {
+                section: 'Control Centre',
+                id: 'control',
+                icon: '⚙️',
+                items: [
+                    { id: 'ai-instructions', label: 'AI Instructions', icon: '🤖' },
+                    { id: 'api-integrations', label: 'API Integrations', icon: '🔌' },
+                    { id: 'user-settings', label: 'User Settings', icon: '👤' }
+                ]
+            }
+        ];
+
+        // CHARACTERS PAGE COMPONENT
+        function CharactersPage() {
+            const [characters, setCharacters] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                loadCharacters();
+            }, []);
+
+            async function loadCharacters() {
+                try {
+                    const charactersData = await window.electronAPI.databaseQuery(
+                        'SELECT * FROM characters ORDER BY created_at DESC'
+                    );
+                    setCharacters(charactersData || []);
+                } catch (error) {
+                    console.error("Error loading characters:", error);
+                    setCharacters([]);
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            if (loading) {
+                return React.createElement('div', { 
+                    style: { 
+                        padding: '40px', 
+                        textAlign: 'center',
+                        color: 'white'
+                    } 
+                }, 'Loading characters...');
+            }
+
+            return React.createElement('div', { 
+                style: { 
+                    padding: '20px 25px',
+                    color: 'white',
+                    background: '#1e1e1e',
+                    height: '100vh',
+                    overflow: 'auto'
+                } 
+            },
+                React.createElement('div', { 
+                    style: {
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginBottom: '30px',
+                        paddingBottom: '15px',
+                        borderBottom: '1px solid #4a5568'
+                    }
+                },
+                    React.createElement('h1', { style: { margin: 0 } }, '👤 Character Profiles'),
+                    React.createElement('button', {
+                        style: {
+                            background: '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '14px'
+                        },
+                        onClick: () => alert('Character creation coming soon!')
+                    }, '+ Add Character')
+                ),
+                
+                characters.length === 0 
+                    ? React.createElement('div', { 
+                        style: {
+                            textAlign: 'center',
+                            padding: '60px 20px',
+                            color: '#718096'
+                        }
+                    },
+                        React.createElement('h3', { style: { margin: '0 0 10px 0' } }, 'No characters yet'),
+                        React.createElement('p', { style: { margin: '0 0 20px 0' } }, 'Start by creating your first character profile'),
+                        React.createElement('button', {
+                            style: {
+                                background: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                padding: '12px 24px',
+                                borderRadius: '5px',
+                                cursor: 'pointer',
+                                fontSize: '14px'
+                            },
+                            onClick: () => alert('Character creation coming soon!')
+                        }, 'Create First Character')
+                      )
+                    : React.createElement('div', { 
+                        style: {
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                            gap: '20px'
+                        }
+                    },
+                        characters.map(character => 
+                            React.createElement('div', { 
+                                key: character.id,
+                                style: {
+                                    background: '#2d3748',
+                                    padding: '20px',
+                                    borderRadius: '8px',
+                                    borderLeft: '4px solid #3b82f6',
+                                    cursor: 'pointer'
+                                }
+                            },
+                                React.createElement('h3', { style: { margin: '0 0 10px 0' } }, character.display_name),
+                                React.createElement('p', { style: { margin: '0 0 5px 0', color: '#a0aec0' } }, 
+                                    character.species || 'Unknown species'
+                                ),
+                                React.createElement('p', { style: { margin: 0, color: '#a0aec0' } }, 
+                                    character.archetype || 'No archetype'
+                                )
+                            )
+                        )
+                      )
+            );
+        }
+
+        // Load initial data
+        useEffect(() => {
+            loadNovelsFromDatabase();
+            generateSampleData();
+        }, []);
+
+        async function loadNovelsFromDatabase() {
+            try {
+                const novelsData = await window.electronAPI.databaseQuery(
+                    'SELECT * FROM novels ORDER BY created_date DESC'
+                );
+                setNovels(novelsData || []);
+            } catch (error) {
+                console.error("Database error:", error);
+                setNovels([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        function generateSampleData() {
+            const today = new Date();
+            const data = {};
+            for (let i = 1; i <= 30; i++) {
+                if (i % 3 === 0 && i < today.getDate()) {
+                    data[i] = { 
+                        status: 'published', 
+                        chapters: [`Chapter ${i}`],
+                        words: 2500
+                    };
+                } else if (i % 5 === 0 && i < today.getDate()) {
+                    data[i] = { status: 'missed' };
+                }
+                if (i % 4 === 0) {
+                    data[i] = { ...data[i], hasTasks: true };
+                }
+            }
+            setCalendarData(data);
+
+            const sampleTasks = [
+                { id: 1, title: 'Finish chapter 46', dueDate: '2025-11-15', completed: false, overdue: true },
+                { id: 2, title: 'Edit character profiles', dueDate: '2025-11-18', completed: false, overdue: false },
+                { id: 3, title: 'Research medieval weapons', dueDate: '2025-11-12', completed: true, overdue: false },
+                { id: 4, title: 'Outline next story arc', dueDate: '2025-11-20', completed: false, overdue: false }
+            ];
+            setTasks(sampleTasks);
+        }
+
+        // Task management functions
+        function toggleTaskCompletion(taskId) {
+            setTasks(tasks.map(task => 
+                task.id === taskId ? { ...task, completed: !task.completed } : task
+            ));
+        }
+
+        function openTaskModal() {
+            setShowTaskModal(true);
+            setNewTask({ title: '', dueDate: '' });
+        }
+
+        function closeTaskModal() {
+            setShowTaskModal(false);
+            setNewTask({ title: '', dueDate: '' });
+        }
+
+        function addNewTask() {
+            if (!newTask.title.trim()) return;
+            
+            const task = {
+                id: Date.now(),
+                title: newTask.title,
+                dueDate: newTask.dueDate,
+                completed: false,
+                overdue: newTask.dueDate && new Date(newTask.dueDate) < new Date()
+            };
+            
+            setTasks([...tasks, task]);
+            closeTaskModal();
+        }
+
+        // Existing novel management functions
+        function openNovelModal() {
+            setShowNovelModal(true);
+            setNovelTitleInput('');
+        }
+
+        function closeNovelModal() {
+            setShowNovelModal(false);
+            setNovelTitleInput('');
+        }
+
+        async function saveNovel() {
+            const title = novelTitleInput.trim();
+            if (!title) return;
+
+            try {
+                await window.electronAPI.databaseRun(
+                    'INSERT INTO novels (title, author) VALUES (?, ?)',
+                    [title, 'You']
+                );
+                closeNovelModal();
+                await loadNovelsFromDatabase();
+            } catch (error) {
+                console.error("Error saving novel:", error);
+            }
+        }
+
+        function openNovelDashboard(novel) {
+            setCurrentNovel(novel);
+            setCurrentView('dashboard');
+            setActiveModule('nexus');
+        }
+
+        function goBackToList() {
+            setCurrentView('novelList');
+            setCurrentNovel(null);
+        }
+
+        function renderCalendar() {
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            const days = [];
+            
+            for (let i = 0; i < firstDay; i++) {
+                days.push(React.createElement('div', { key: `empty-${i}`, className: 'calendar-day' }));
+            }
+            
+            const today = new Date();
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const isToday = date.toDateString() === today.toDateString();
+                const dayData = calendarData[day];
+                
+                let dayClass = 'calendar-day';
+                if (isToday) dayClass += ' current';
+                if (dayData) {
+                    if (dayData.status === 'published') dayClass += ' published';
+                    if (dayData.status === 'missed') dayClass += ' missed';
+                    if (dayData.hasTasks) dayClass += ' has-tasks';
+                }
+                
+                days.push(
+                    React.createElement('div', {
+                        key: day,
+                        className: dayClass,
+                        title: dayData ? `${dayData.chapters ? dayData.chapters.join(', ') : 'Missed day'}` : `November ${day}, 2025`
+                    },
+                        React.createElement('div', { className: 'day-number' }, day)
+                    )
+                );
+            }
+            
+            return days;
+        }
+
+        // SIDEBAR COMPONENT
+        function Sidebar() {
+            return React.createElement('div', { className: `sidebar ${sidebarCollapsed ? 'collapsed' : ''}` },
+                React.createElement('div', { className: 'sidebar-header' },
+                    !sidebarCollapsed && React.createElement('h2', { className: 'sidebar-title' }, 'NovelNexus'),
+                    React.createElement('button', {
+                        className: 'collapse-btn',
+                        onClick: () => setSidebarCollapsed(!sidebarCollapsed),
+                        title: sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
+                    }, sidebarCollapsed ? '→' : '←')
+                ),
+                
+                React.createElement('div', { className: 'nav-items' },
+                    navStructure.map(section => 
+                        React.createElement('div', { key: section.id, className: 'nav-section' },
+                            !sidebarCollapsed && 
+                                React.createElement('div', { className: 'section-header' }, section.section),
+                            
+                            section.items.map(item => 
+                                React.createElement('div', {
+                                    key: item.id,
+                                    className: `nav-item ${activeModule === item.id ? 'active' : ''}`,
+                                    onClick: () => {
+                                        setActiveModule(item.id);
+                                        if (item.id === 'characters') {
+                                            setCurrentView('characters');
+                                        } else if (item.id === 'home') {
+                                            setCurrentView('dashboard');
+                                        }
+                                    },
+                                    title: item.label
+                                },
+                                    React.createElement('span', { className: 'nav-icon' }, item.icon),
+                                    !sidebarCollapsed && React.createElement('span', null, item.label)
+                                )
+                            )
+                        )
+                    )
+                ),
+                
+                React.createElement('div', { className: 'sidebar-footer' },
+                    React.createElement('button', {
+                        onClick: goBackToList,
+                        style: {
+                            background: 'transparent',
+                            border: '1px solid #4a5568',
+                            color: '#a0aec0',
+                            padding: '8px 16px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            width: '100%',
+                            fontSize: '0.8em'
+                        }
+                    }, sidebarCollapsed ? '←' : '← Back to Novels')
+                )
+            );
+        }
+
+        // TASK LIST COMPONENT
+        function TaskList() {
+            return React.createElement('div', { className: 'tasks-section' },
+                React.createElement('div', { className: 'tasks-header' },
+                    React.createElement('h3', null, 'Task List'),
+                    React.createElement('button', {
+                        className: 'add-task-btn',
+                        onClick: openTaskModal
+                    }, '+ Add Task')
+                ),
+                
+                React.createElement('div', { className: 'task-list' },
+                    tasks.filter(task => !task.completed).map(task =>
+                        React.createElement('div', {
+                            key: task.id,
+                            className: `task-item ${task.overdue ? 'overdue' : ''}`
+                        },
+                            React.createElement('input', {
+                                type: 'checkbox',
+                                className: 'task-checkbox',
+                                checked: task.completed,
+                                onChange: () => toggleTaskCompletion(task.id)
+                            }),
+                            React.createElement('div', { className: 'task-content' },
+                                React.createElement('div', { className: 'task-title' }, task.title),
+                                React.createElement('div', { className: 'task-due' },
+                                    task.overdue ? 
+                                        React.createElement('span', { className: 'task-overdue' }, `Overdue: ${task.dueDate}`) :
+                                        `Due: ${task.dueDate}`
+                                )
+                            )
+                        )
+                    ),
+                    
+                    tasks.filter(task => task.completed).length > 0 &&
+                        React.createElement('div', { style: {marginTop: '15px'} },
+                            React.createElement('h4', { style: {margin: '0 0 10px 0', color: '#a0aec0'} }, 'Completed'),
+                            tasks.filter(task => task.completed).map(task =>
+                                React.createElement('div', {
+                                    key: task.id,
+                                    className: 'task-item completed'
+                                },
+                                    React.createElement('input', {
+                                        type: 'checkbox',
+                                        className: 'task-checkbox',
+                                        checked: task.completed,
+                                        onChange: () => toggleTaskCompletion(task.id)
+                                    }),
+                                    React.createElement('div', { className: 'task-content' },
+                                        React.createElement('div', { className: 'task-title' }, task.title),
+                                        React.createElement('div', { className: 'task-due' }, `Completed: ${task.dueDate}`)
+                                    )
+                                )
+                            )
+                        )
+                )
+            );
+        }
+
+        // DASHBOARD COMPONENT
+        function Dashboard() {
+            return React.createElement('div', { className: 'app-container' },
+                React.createElement(Sidebar),
+                
+                React.createElement('div', { className: 'main-content' },
+                    React.createElement('div', { className: 'dashboard-header' },
+                        React.createElement('div', { className: 'project-header' },
+                            React.createElement('div', { className: 'project-title' },
+                                React.createElement('h1', null, currentNovel.title),
+                                React.createElement('select', { className: 'project-switcher' },
+                                    React.createElement('option', null, 'Switch Project...'),
+                                    novels.map(novel => 
+                                        React.createElement('option', { key: novel.id }, novel.title)
+                                    )
+                                )
+                            )
+                        ),
+                        
+                        React.createElement('div', { className: 'series-info' },
+                            React.createElement('span', null, 'Series: Lin Saga'),
+                            React.createElement('div', { className: 'toggle-aggregate' },
+                                React.createElement('input', { type: 'checkbox', id: 'aggregate' }),
+                                React.createElement('label', { htmlFor: 'aggregate' }, 'Toggle Aggregate Series View')
+                            )
+                        ),
+                        
+                        React.createElement('div', { className: 'publishing-stats' },
+                            React.createElement('div', { className: 'stat-item' },
+                                React.createElement('div', { className: 'stat-value' }, 'Webnovel'),
+                                React.createElement('div', { className: 'stat-label' }, 'Platform')
+                            ),
+                            React.createElement('div', { className: 'stat-item' },
+                                React.createElement('div', { className: 'stat-value' }, '45'),
+                                React.createElement('div', { className: 'stat-label' }, 'Published Chapters')
+                            ),
+                            React.createElement('div', { className: 'stat-item' },
+                                React.createElement('div', { className: 'stat-value' }, '120k'),
+                                React.createElement('div', { className: 'stat-label' }, 'Total Words')
+                            ),
+                            React.createElement('div', { className: 'stat-item' },
+                                React.createElement('div', { className: 'stat-value' }, 'Ch105 "Unravel"'),
+                                React.createElement('div', { className: 'stat-label' }, 'Last Published: 11/13')
+                            )
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'dashboard-content' },
+                        React.createElement('div', { className: 'calendar-section' },
+                            React.createElement('div', { className: 'calendar-header' },
+                                React.createElement('h3', null, 'November 2025')
+                            ),
+                            React.createElement('div', { style: {display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '3px', marginBottom: '8px', textAlign: 'center', fontSize: '0.8em'} },
+                                ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day =>
+                                    React.createElement('div', { key: day, style: {fontWeight: 'bold', color: '#a0aec0'} }, day)
+                                )
+                            ),
+                            React.createElement('div', { className: 'calendar-grid' },
+                                renderCalendar()
+                            ),
+                            React.createElement('div', { className: 'quick-actions' },
+                                React.createElement('button', { className: 'action-btn' }, 'New Chapter'),
+                                React.createElement('button', { className: 'action-btn' }, 'Generate Prompt'),
+                                React.createElement('button', { className: 'action-btn' }, 'Export Wiki')
+                            )
+                        ),
+                        
+                        React.createElement(TaskList)
+                    )
+                )
+            );
+        }
+
+        // TASK MODAL
+        function TaskModal() {
+            return React.createElement('div', { className: 'modal-overlay' },
+                React.createElement('div', { className: 'modal-content' },
+                    React.createElement('h3', { className: 'modal-title' }, 'Add New Task'),
+                    React.createElement('input', {
+                        type: 'text',
+                        className: 'modal-input',
+                        placeholder: 'Task description...',
+                        value: newTask.title,
+                        onChange: (e) => setNewTask({...newTask, title: e.target.value}),
+                        autoFocus: true
+                    }),
+                    React.createElement('input', {
+                        type: 'date',
+                        className: 'modal-input',
+                        value: newTask.dueDate,
+                        onChange: (e) => setNewTask({...newTask, dueDate: e.target.value})
+                    }),
+                    React.createElement('div', { className: 'modal-buttons' },
+                        React.createElement('button', {
+                            onClick: closeTaskModal,
+                            className: 'modal-btn modal-btn-secondary'
+                        }, 'Cancel'),
+                        React.createElement('button', {
+                            onClick: addNewTask,
+                            className: 'modal-btn modal-btn-primary'
+                        }, 'Add Task')
+                    )
+                )
+            );
+        }
+
+        // NOVEL LIST VIEW
+        function NovelListView() {
+            return React.createElement('div', { className: 'app-container' },
+                React.createElement('div', { className: 'novel-list' },
+                    React.createElement('div', { className: 'app-header' },
+                        React.createElement('h1', null, '📚 NovelNexus'),
+                        React.createElement('p', null, 'Your All-in-One Writing Studio')
+                    ),
+                    
+                    showNovelModal && React.createElement('div', { className: 'modal-overlay' },
+                        React.createElement('div', { className: 'modal-content' },
+                            React.createElement('h3', { className: 'modal-title' }, 'Add New Novel'),
+                            React.createElement('input', {
+                                type: 'text',
+                                className: 'modal-input',
+                                placeholder: 'Enter your novel title...',
+                                value: novelTitleInput,
+                                onChange: (e) => setNovelTitleInput(e.target.value),
+                                onKeyPress: (e) => e.key === 'Enter' && saveNovel()
+                            }),
+                            React.createElement('div', { className: 'modal-buttons' },
+                                React.createElement('button', {
+                                    onClick: closeNovelModal,
+                                    className: 'modal-btn modal-btn-secondary'
+                                }, 'Cancel'),
+                                React.createElement('button', {
+                                    onClick: saveNovel,
+                                    className: 'modal-btn modal-btn-primary'
+                                }, 'Save Novel')
+                            )
+                        )
+                    ),
+                    
+                    React.createElement('div', { className: 'list-header' },
+                        React.createElement('h2', null, 'Your Novels'),
+                        React.createElement('button', { 
+                            onClick: openNovelModal,
+                            className: 'add-novel-btn'
+                        }, '+ Add Novel')
+                    ),
+                    
+                    novels.length === 0 
+                        ? React.createElement('div', { className: 'empty-state' },
+                            React.createElement('h3', null, 'Welcome to NovelNexus!'),
+                            React.createElement('p', null, 'Start by adding your first novel.'),
+                            React.createElement('button', { 
+                                onClick: openNovelModal,
+                                className: 'cta-button'
+                            }, 'Add Your First Novel')
+                          )
+                        : React.createElement('div', { className: 'novels-grid' },
+                            novels.map(novel => 
+                                React.createElement('div', { 
+                                    key: novel.id,
+                                    className: 'novel-card',
+                                    onClick: () => openNovelDashboard(novel)
+                                },
+                                    React.createElement('h3', null, novel.title),
+                                    React.createElement('p', null, `By: ${novel.author}`),
+                                    React.createElement('div', { style: {display: 'flex', gap: '15px', marginTop: '15px'} },
+                                        React.createElement('div', { style: {background: '#4a5568', padding: '8px 12px', borderRadius: '5px', fontSize: '0.9em'} }, 
+                                            `📖 ${novel.chapter_count || 0} chapters`
+                                        ),
+                                        React.createElement('div', { style: {background: '#4a5568', padding: '8px 12px', borderRadius: '5px', fontSize: '0.9em'} }, 
+                                            `📝 ${novel.word_count || 0} words`
+                                        )
+                                    )
+                                )
+                            )
+                          )
+                )
+            );
+        }
+
+        // RENDER CURRENT VIEW FUNCTION
+        function renderCurrentView() {
+            switch(currentView) {
+                case 'novelList':
+                    return React.createElement(NovelListView);
+                case 'dashboard':
+                    return React.createElement(Dashboard);
+                case 'characters':
+                    return React.createElement(CharactersPage);
+                default:
+                    return React.createElement(Dashboard);
+            }
+        }
+
+        if (loading) {
+            return React.createElement('div', { className: 'loading' }, 'Loading your writing studio...');
+        }
+
+        return React.createElement('div', null,
+            renderCurrentView(),
+            showTaskModal && React.createElement(TaskModal)
+        );
+    }
+
+    // Ensure electronAPI is available
+    if (!window.electronAPI) {
+        const { ipcRenderer } = window.require('electron');
+        window.electronAPI = {
+            showInputDialog: (options) => ipcRenderer.invoke('show-input-dialog', options),
+            showAlertDialog: (options) => ipcRenderer.invoke('show-alert-dialog', options),
+            databaseQuery: (sql, params = []) => ipcRenderer.invoke('database-query', sql, params),
+            databaseRun: (sql, params = []) => ipcRenderer.invoke('database-run', sql, params)
+        };
+    }
+
+    // Render the app
+    ReactDOM.render(React.createElement(App), document.getElementById('root'));
+</script>
+</body>
+</html>

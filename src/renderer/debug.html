@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test Page</h1>
+    <button id="testButton">Test Electron Dialog</button>
+    
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        document.getElementById('testButton').addEventListener('click', async () => {
+            console.log("Button clicked - testing dialog...");
+            
+            try {
+                // Test if IPC is working
+                const result = await ipcRenderer.invoke('show-input-dialog', {
+                    title: 'Test Dialog',
+                    message: 'Does this work?',
+                    placeholder: 'Enter something...'
+                });
+                console.log("Dialog result:", result);
+                
+                if (result) {
+                    alert("SUCCESS! You entered: " + result);
+                } else {
+                    alert("Dialog was cancelled");
+                }
+            } catch (error) {
+                console.error("Dialog error:", error);
+                alert("ERROR: " + error.message);
+            }
+        });
+        
+        console.log("Debug page loaded");
+    </script>
+</body>
+</html>
