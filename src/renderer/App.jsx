@@ -1,6 +1,6 @@
 const { useState, useEffect } = React;
 
-// CLEAN CHARACTERS PAGE - NO "COMING SOON"
+// CHARACTERS PAGE COMPONENT
 function SimpleCharactersPage() {
     const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -14,11 +14,11 @@ function SimpleCharactersPage() {
         age_current: ''
     });
 
-    // Load characters from database - FIXED COLUMN NAME
+    // Load characters from database
     const loadCharacters = async () => {
         try {
             const charactersData = await window.electronAPI.databaseQuery(
-                'SELECT * FROM characters ORDER BY id DESC'  // ← FIXED: using id instead of created_at
+                'SELECT * FROM characters ORDER BY id DESC'
             );
             setCharacters(charactersData || []);
         } catch (error) {
@@ -63,7 +63,7 @@ function SimpleCharactersPage() {
             
             setShowCreateForm(false);
             setFormData({ display_name: '', full_name: '', archetype: '', species: '', gender: '', age_current: '' });
-            loadCharacters(); // Refresh the list
+            loadCharacters();
             alert('Character saved successfully!');
         } catch (error) {
             console.error("Error saving character:", error);
@@ -118,7 +118,7 @@ function SimpleCharactersPage() {
             }, '+ Add Character')
         ),
         
-        // Content - Show characters or empty state
+        // Content
         characters.length === 0 
             ? React.createElement('div', { 
                 style: {
@@ -171,7 +171,7 @@ function SimpleCharactersPage() {
                 )
               ),
 
-        // Character Creation Modal - NO "COMING SOON" HERE!
+        // Character Creation Modal
         showCreateForm && React.createElement('div', {
             style: {
                 position: 'fixed',
@@ -245,7 +245,7 @@ function SimpleCharactersPage() {
                     )
                 ),
 
-                // Buttons - NO "COMING SOON" HERE!
+                // Buttons
                 React.createElement('div', { 
                     style: {
                         display: 'flex',
@@ -326,7 +326,13 @@ function App() {
     }
 
     if (loading) {
-        return React.createElement('div', { className: 'loading' }, 'Loading your writing studio...');
+        return React.createElement('div', { 
+            style: { 
+                padding: '40px', 
+                textAlign: 'center',
+                color: 'white'
+            } 
+        }, 'Loading your writing studio...');
     }
 
     return React.createElement('div', { className: 'app' },
@@ -429,7 +435,7 @@ style.textContent = `
         background: #3b82f6; color: white; border: none; padding: 10px 20px; 
         border-radius: 5px; cursor: pointer; font-size: 14px;
     }
-    .novels-grid { display: grid; grid-templateColumns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+    .novels-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
     .novel-card { 
         background: #2d3748; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;
         cursor: pointer;

@@ -600,126 +600,291 @@
             }
         ];
 
-        // CHARACTERS PAGE COMPONENT
-        function CharactersPage() {
-            const [characters, setCharacters] = useState([]);
-            const [loading, setLoading] = useState(true);
+// CHARACTERS PAGE COMPONENT - WORKING VERSION
+function CharactersPage() {
+    const [characters, setCharacters] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showCreateForm, setShowCreateForm] = useState(false);
+    const [formData, setFormData] = useState({
+        display_name: '',
+        full_name: '',
+        archetype: '',
+        species: '',
+        gender: '',
+        age_current: ''
+    });
 
-            useEffect(() => {
-                loadCharacters();
-            }, []);
+    // Load characters from database - FIXED COLUMN NAME
+    const loadCharacters = async () => {
+        try {
+            const charactersData = await window.electronAPI.databaseQuery(
+                'SELECT * FROM characters ORDER BY id DESC'  // ← FIXED: using id instead of created_at
+            );
+            setCharacters(charactersData || []);
+        } catch (error) {
+            console.error("Error loading characters:", error);
+            setCharacters([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            async function loadCharacters() {
-                try {
-                    const charactersData = await window.electronAPI.databaseQuery(
-                        'SELECT * FROM characters ORDER BY created_at DESC'
-                    );
-                    setCharacters(charactersData || []);
-                } catch (error) {
-                    console.error("Error loading characters:", error);
-                    setCharacters([]);
-                } finally {
-                    setLoading(false);
-                }
+    useEffect(() => {
+        loadCharacters();
+    }, []);
+
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
+    const handleSave = async () => {
+        if (!formData.display_name.trim()) {
+            alert('Please enter a display name');
+            return;
+        }
+
+        try {
+            await window.electronAPI.databaseRun(
+                `INSERT INTO characters (
+                    display_name, full_name, archetype, species, gender, age_current
+                ) VALUES (?, ?, ?, ?, ?, ?)`,
+                [
+                    formData.display_name,
+                    formData.full_name,
+                    formData.archetype,
+                    formData.species,
+                    formData.gender,
+                    formData.age_current
+                ]
+            );
+            
+            setShowCreateForm(false);
+            setFormData({ display_name: '', full_name: '', archetype: '', species: '', gender: '', age_current: '' });
+            loadCharacters();
+            alert('Character saved successfully!');
+        } catch (error) {
+            console.error("Error saving character:", error);
+            alert("Error saving character. The characters table might not exist yet.");
+        }
+    };
+
+    const archetypeOptions = ['The Hero', 'The Mentor', 'The Guardian', 'The Trickster', 'The Shadow', 'The Herald'];
+    const speciesOptions = ['Human', 'Elf', 'Draconian', 'AI', 'Divine Being', 'Custom'];
+
+    if (loading) {
+        return React.createElement('div', { 
+            style: { 
+                padding: '40px', 
+                textAlign: 'center',
+                color: 'white'
+            } 
+        }, 'Loading characters...');
+    }
+
+    return React.createElement('div', { 
+        style: { 
+            padding: '20px 25px',
+            color: 'white',
+            background: '#1e1e1e',
+            height: '100vh',
+            overflow: 'auto'
+        } 
+    },
+        // Header
+        React.createElement('div', { 
+            style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '30px',
+                paddingBottom: '15px',
+                borderBottom: '1px solid #4a5568'
             }
-
-            if (loading) {
-                return React.createElement('div', { 
-                    style: { 
-                        padding: '40px', 
-                        textAlign: 'center',
-                        color: 'white'
-                    } 
-                }, 'Loading characters...');
-            }
-
-            return React.createElement('div', { 
-                style: { 
-                    padding: '20px 25px',
+        },
+            React.createElement('h1', { style: { margin: 0 } }, '👤 Character Profiles'),
+            React.createElement('button', {
+                style: {
+                    background: '#3b82f6',
                     color: 'white',
-                    background: '#1e1e1e',
-                    height: '100vh',
-                    overflow: 'auto'
+                    border: 'none',
+                    padding: '10px 20px',
+                    borderRadius: '5px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                },
+                onClick: () => setShowCreateForm(true)  // ← CHANGED: No more "coming soon"
+            }, '+ Add Character')
+        ),
+        
+        // Content
+        characters.length === 0 
+            ? React.createElement('div', { 
+                style: {
+                    textAlign: 'center',
+                    padding: '60px 20px',
+                    color: '#718096'
+                }
+            },
+                React.createElement('h3', { style: { margin: '0 0 10px 0' } }, 'No characters yet'),
+                React.createElement('p', { style: { margin: '0 0 20px 0' } }, 'Start by creating your first character profile'),
+                React.createElement('button', {
+                    style: {
+                        background: '#3b82f6',
+                        color: 'white',
+                        border: 'none',
+                        padding: '12px 24px',
+                        borderRadius: '5px',
+                        cursor: 'pointer',
+                        fontSize: '14px'
+                    },
+                    onClick: () => setShowCreateForm(true)  // ← CHANGED: No more "coming soon"
+                }, 'Create First Character')
+              )
+            : React.createElement('div', { 
+                style: {
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+                    gap: '20px'
+                }
+            },
+                characters.map(character => 
+                    React.createElement('div', { 
+                        key: character.id,
+                        style: {
+                            background: '#2d3748',
+                            padding: '20px',
+                            borderRadius: '8px',
+                            borderLeft: '4px solid #3b82f6',
+                            cursor: 'pointer'
+                        }
+                    },
+                        React.createElement('h3', { style: { margin: '0 0 10px 0' } }, character.display_name || character.name),
+                        React.createElement('p', { style: { margin: '0 0 5px 0', color: '#a0aec0' } }, 
+                            character.species || 'Unknown species'
+                        ),
+                        React.createElement('p', { style: { margin: 0, color: '#a0aec0' } }, 
+                            character.archetype || 'No archetype'
+                        )
+                    )
+                )
+              ),
+
+        // Character Creation Modal - WORKING FORM
+        showCreateForm && React.createElement('div', {
+            style: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(0,0,0,0.8)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 1000
+            }
+        },
+            React.createElement('div', { 
+                style: { 
+                    background: '#2d3748',
+                    padding: '25px',
+                    borderRadius: '8px',
+                    width: '500px',
+                    maxWidth: '90vw',
+                    border: '2px solid #4a5568'
                 } 
             },
+                React.createElement('h2', { style: { margin: '0 0 20px 0', color: 'white', textAlign: 'center' } }, 'Create New Character'),
+                
+                // Form Fields
+                React.createElement('div', { style: { display: 'flex', flexDirection: 'column', gap: '15px' } },
+                    // Display Name
+                    React.createElement('div', null,
+                        React.createElement('label', { 
+                            style: { display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'white' } 
+                        }, 'Display Name *'),
+                        React.createElement('input', {
+                            type: 'text',
+                            value: formData.display_name,
+                            onChange: (e) => handleInputChange('display_name', e.target.value),
+                            placeholder: 'How the character is primarily known...',
+                            style: {
+                                width: '100%',
+                                padding: '10px',
+                                background: '#1a202c',
+                                border: '1px solid #4a5568',
+                                color: 'white',
+                                borderRadius: '4px',
+                                boxSizing: 'border-box'
+                            }
+                        })
+                    ),
+                    
+                    // Full Name
+                    React.createElement('div', null,
+                        React.createElement('label', { 
+                            style: { display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'white' } 
+                        }, 'Full Name'),
+                        React.createElement('input', {
+                            type: 'text',
+                            value: formData.full_name,
+                            onChange: (e) => handleInputChange('full_name', e.target.value),
+                            placeholder: 'Legal or birth name...',
+                            style: {
+                                width: '100%',
+                                padding: '10px',
+                                background: '#1a202c',
+                                border: '1px solid #4a5568',
+                                color: 'white',
+                                borderRadius: '4px',
+                                boxSizing: 'border-box'
+                            }
+                        })
+                    )
+                ),
+
+                // Buttons
                 React.createElement('div', { 
                     style: {
                         display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginBottom: '30px',
-                        paddingBottom: '15px',
-                        borderBottom: '1px solid #4a5568'
+                        gap: '10px',
+                        justifyContent: 'flex-end',
+                        marginTop: '25px',
+                        paddingTop: '15px',
+                        borderTop: '1px solid #4a5568'
                     }
                 },
-                    React.createElement('h1', { style: { margin: 0 } }, '👤 Character Profiles'),
                     React.createElement('button', {
+                        onClick: () => setShowCreateForm(false),
                         style: {
-                            background: '#3b82f6',
+                            background: '#718096',
                             color: 'white',
                             border: 'none',
                             padding: '10px 20px',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            fontSize: '14px'
-                        },
-                        onClick: () => alert('Character creation coming soon!')
-                    }, '+ Add Character')
-                ),
-                
-                characters.length === 0 
-                    ? React.createElement('div', { 
-                        style: {
-                            textAlign: 'center',
-                            padding: '60px 20px',
-                            color: '#718096'
+                            borderRadius: '4px',
+                            cursor: 'pointer'
                         }
-                    },
-                        React.createElement('h3', { style: { margin: '0 0 10px 0' } }, 'No characters yet'),
-                        React.createElement('p', { style: { margin: '0 0 20px 0' } }, 'Start by creating your first character profile'),
-                        React.createElement('button', {
-                            style: {
-                                background: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                padding: '12px 24px',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                fontSize: '14px'
-                            },
-                            onClick: () => alert('Character creation coming soon!')
-                        }, 'Create First Character')
-                      )
-                    : React.createElement('div', { 
+                    }, 'Cancel'),
+                    React.createElement('button', {
+                        onClick: handleSave,
+                        disabled: !formData.display_name.trim(),
                         style: {
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                            gap: '20px'
+                            background: !formData.display_name.trim() ? '#4a5568' : '#3b82f6',
+                            color: 'white',
+                            border: 'none',
+                            padding: '10px 20px',
+                            borderRadius: '4px',
+                            cursor: !formData.display_name.trim() ? 'not-allowed' : 'pointer'
                         }
-                    },
-                        characters.map(character => 
-                            React.createElement('div', { 
-                                key: character.id,
-                                style: {
-                                    background: '#2d3748',
-                                    padding: '20px',
-                                    borderRadius: '8px',
-                                    borderLeft: '4px solid #3b82f6',
-                                    cursor: 'pointer'
-                                }
-                            },
-                                React.createElement('h3', { style: { margin: '0 0 10px 0' } }, character.display_name),
-                                React.createElement('p', { style: { margin: '0 0 5px 0', color: '#a0aec0' } }, 
-                                    character.species || 'Unknown species'
-                                ),
-                                React.createElement('p', { style: { margin: 0, color: '#a0aec0' } }, 
-                                    character.archetype || 'No archetype'
-                                )
-                            )
-                        )
-                      )
-            );
-        }
+                    }, 'Save Character')
+                )
+            )
+        )
+    );
+}
 
         // Load initial data
         useEffect(() => {
